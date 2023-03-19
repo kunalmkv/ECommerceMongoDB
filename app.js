@@ -3,6 +3,8 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const User = require('./models/user')
+
 const errorController = require('./controllers/error');
 
 
@@ -26,10 +28,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => { //req is not a normal request but a sequelised object having SQL properties
-    // User.findByPk(1).then(user => {
-    //     req.user = user;
-    next();
-    // }).catch(err => console.log(err));
+    User.findById('6416db5e52ffdc80b19baddf').then(user => {
+        req.user = new User(user.name, user.email, user.cart, user._id);
+        next();
+    }).catch(err => {
+        console.log(err)
+        next();
+    });
 })
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -42,5 +47,6 @@ app.use(errorController.get404);
 
 
 mongoConnect(() => {
+
     app.listen(3000)
 });
