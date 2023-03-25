@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-//const User = require('./models/user');
+const User = require('./models/user');
 
 const errorController = require('./controllers/error');
 
@@ -30,15 +30,15 @@ const shopRoutes = require('./routes/shop');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-/*app.use((req, res, next) => { //req is not a normal request but a sequelised object having SQL properties
-    User.findById('6416db5e52ffdc80b19baddf').then(user => {
-        req.user = new User(user.name, user.email, user.cart, user._id);
+app.use((req, res, next) => {
+    User.findById('641f2a099e0885bed80680b1').then(user => {
+        req.user = user;
         next();
     }).catch(err => {
         console.log(err)
         next();
     });
-})*/
+})
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 
@@ -50,6 +50,20 @@ app.use(errorController.get404);
 
 
 mongoose.connect(process.env.MONGODB_URI).then(result => {
+
+    User.findOne().then(user => {
+        if (!user) {
+            const user = new User({
+                name: 'Kunal Mishra',
+                email: 'kunal@gmail.com',
+                cart: {
+                    items: []
+                }
+            });
+            user.save();
+        }
+    })
+
     app.listen(3000);
     console.log('connected and listening at 3000')
 }).catch(err => {
